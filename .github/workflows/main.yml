@@ -30,7 +30,12 @@ jobs:
         run: dotnet restore
 
       - name: Run benchmarks
-        run: dotnet run -c Release --project tests/Benchmarks/Benchmarks.csproj
+        run: dotnet run -c Release --project tests/Benchmarks/Benchmarks.csproj > benchmarks.txt
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v2
+        with:
+          name: benchmark-results
+          path: benchmark-results.txt
   add-comment:
     if: github.event.label.name == 'perf'
     runs-on: ubuntu-latest
