@@ -30,7 +30,7 @@ jobs:
         run: dotnet restore
 
       - name: Run benchmarks
-        run: dotnet run -c Release --project Benchmarks.csproj
+        run: dotnet run -c Release --project tests/Benchmarks/Benchmarks.csproj
   add-comment:
     if: github.event.label.name == 'perf'
     runs-on: ubuntu-latest
