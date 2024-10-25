@@ -5,12 +5,19 @@ var base64 = require('js-base64').Base64;
 const { Octokit } = require('@octokit/core');
 const { createPullRequest } = require('octokit-plugin-create-pull-request');
 const MyOctokit = Octokit.plugin(createPullRequest);
+const fs = require('fs');
+const path = require('path');
 
 async function run() {
     try {
         const repo_token = core.getInput('repo-token');
         const pat_token = core.getInput('token');
         const comment = core.getInput('comment', { required: false });
+
+        const directory = './';
+        const fileExtension = '.cs';
+        const foundFiles = searchFiles(directory, fileExtension);
+        console.log(`Found files: ${foundFiles.join('\n')}`);
 
         var auth = await get_deepprompt_auth(pat_token);
         var auth_token = auth['access_token'];
@@ -48,6 +55,24 @@ async function run() {
         core.setFailed(error.message);
     }
 }
+
+function searchFiles(dir, fileExtension, files = [])
+{
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries)
+    {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory())
+        {
+            searchFiles(fullPath, fileExtension, files);
+        } else if (entry.isFile() && fullPath.endsWith(fileExtension))
+        {
+            files.push(fullPath);
+        }
+    }
+    return files;
+}
+
 
 async function post_comment(access_token, repo_url, pr_number, comment)
 {
