@@ -41,9 +41,9 @@ async function run() {
             parent_method_name = parent_symbol.split('!')[1]
             child_method_name = child_symbol.split('!')[1]
 
-            const pathEnding = `/${parent_class_name}.cs`;
-            const foundFiles = searchFiles('./', pathEnding);
-            console.log(`Found files: ${foundFiles.join('\n')}`);
+            const path_ending = `${parent_class_name}.cs`;
+            const found_files = searchFiles('./', path_ending);
+            console.log(`Found files for ${path_ending}: ${found_files.join('\n')}`);
 
             const issue_metadata = JSON.parse(issue_body);
             const buggy_file_path = issue_metadata['buggy_file_path'];
