@@ -36,6 +36,9 @@ async function run() {
             const issue_number = core.getInput('issue-number');
             const parent_symbol = issue_body.split('<!-- ps: ')[1].split(' -->')[0]
             const child_symbol = issue_body.split('<!-- s: ')[1].split(' -->')[0]
+
+            console.log(parent_symbol);
+            console.log(child_symbol);
             
             parent_class_name = parent_symbol.split('!')[0].split('.')[-1]
             parent_method_name = parent_symbol.split('!')[1]
