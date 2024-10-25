@@ -44,7 +44,7 @@ async function run() {
 
             const directory = './';
             const pathEnding = `${parent_namespace_name}/${parent_class_name}.cs`;
-            const foundFiles = searchFiles(directory, fileExtension);
+            const foundFiles = searchFiles(directory, pathEnding);
             console.log(`Found files: ${foundFiles.join('\n')}`);
 
             const issue_metadata = JSON.parse(issue_body);
