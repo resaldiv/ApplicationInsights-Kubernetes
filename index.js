@@ -22,6 +22,7 @@ async function run() {
         const issue_title = core.getInput('issue-title');
         const issue_body = core.getInput('issue-body');
         const issue_number = core.getInput('issue-number');
+        console.log(issue_body);
 
         console.log("---Symbol info---");
         const parent_symbol = issue_body.split('<!-- ps: ')[1].split(' -->')[0];
@@ -37,8 +38,13 @@ async function run() {
         console.log(`Found files for ${path_ending}: ${found_files.join('\n')}`);
 
         console.log("---Issue metadata---");
-        const issue_metadata = JSON.parse(issue_body);
-        console.log(issue_metadata);
+        try {
+            const issue_metadata = JSON.parse(issue_body);
+            console.log(issue_metadata);
+        } catch (error) {
+            console.log("Parsing JSON error");
+            core.setFailed(error.message);
+        }
     } catch (error) {
         console.log("Run error");
         core.setFailed(error.message);
