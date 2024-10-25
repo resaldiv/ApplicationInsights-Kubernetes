@@ -193,6 +193,7 @@ async function fix_bug(auth_token, session_id, buggy_code, start_line_number, bu
         });
         let data = await response.json();
         console.log("RESPONSE:");
+        console.log(data);
         return "fixed file";
         // console.log(data);
         // let fix = data['response_text'].slice(0, -3).split('```csharp\n\n')[1];
