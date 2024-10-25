@@ -37,7 +37,7 @@ async function run() {
             const parent_symbol = issue_body.split('<!-- ps: ')[1].split(' -->')[0];
             const child_symbol = issue_body.split('<!-- s: ')[1].split(' -->')[0];
 
-            const parent_class_name = parent_symbol.split('!')[0].split('.')[-1];
+            const parent_class_name = parent_symbol.split('!')[0].split('.').last;
             const parent_method_name = parent_symbol.split('!')[1];
             const child_method_name = child_symbol.split('!')[1];
             console.log(parent_class_name);
