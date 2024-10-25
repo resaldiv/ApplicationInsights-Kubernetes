@@ -34,12 +34,18 @@ async function run() {
             const issue_title = core.getInput('issue-title');
             const issue_body = core.getInput('issue-body');
             const issue_number = core.getInput('issue-number');
+            const parent_symbol = issue_body.split('<!-- ps: ')[1].split(' -->')[0]
+            const child_symbol = issue_body.split('<!-- s: ')[1].split(' -->')[0]
+            
+            parent_class_name = parent_symbol.split('!')[0].split('.')[-1]
+            parent_namespace_name = parent_symbol.split('!')[0].split('.')[-2]
+            parent_method_name = parent_symbol.split('!')[1]
+            child_method_name = child_symbol.split('!')[1]
 
             const directory = './';
-            const fileExtension = '.cs';
+            const pathEnding = `${parent_namespace_name}/${parent_class_name}.cs`;
             const foundFiles = searchFiles(directory, fileExtension);
             console.log(`Found files: ${foundFiles.join('\n')}`);
-            console.log(issue_body);
 
             const issue_metadata = JSON.parse(issue_body);
             const buggy_file_path = issue_metadata['buggy_file_path'];
