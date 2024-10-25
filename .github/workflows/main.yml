@@ -34,7 +34,7 @@ jobs:
         uses: benchmark-action/github-action-benchmark@v1
         with:
           tool: 'benchmarkdotnet'
-          output-file-path: BenchmarkDotNet.Artifacts\results\Benchmarks.StringUtilsBenchmark-report-full-compressed.json
+          output-file-path: ApplicationInsights-Kubernetes/ApplicationInsights-Kubernetes/tests/Benchmarks/BenchmarkDotNet.Artifacts\results\Benchmarks.StringUtilsBenchmark-report-full-compressed.json
   
   add-comment:
     if: github.event.label.name == 'perf'
