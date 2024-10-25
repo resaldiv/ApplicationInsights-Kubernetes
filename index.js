@@ -40,9 +40,7 @@ async function run() {
             const parent_class_name = parent_symbol.split('!')[0].split('.').last;
             const parent_method_name = parent_symbol.split('!')[1];
             const child_method_name = child_symbol.split('!')[1];
-            console.log(parent_class_name);
-            console.log(parent_method_name);
-            console.log(child_method_name);
+            console.log(parent_symbol.split('!')[0]);
             
             const path_ending = `${parent_class_name}.cs`;
             const found_files = searchFiles('./', path_ending);
