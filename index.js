@@ -170,37 +170,45 @@ async function get_response(auth_token, session_id, query)
 async function fix_bug(auth_token, session_id, buggy_code, start_line_number, buggy_function_call)
 {
     var intent = 'perf_fix';
-    let response = await fetch(`${DEEPPROMPT_ENDPOINT}/query`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'DeepPrompt-Version': 'v1',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${auth_token}`,
-            'DeepPrompt-Session-ID': session_id
-        },
-        body: JSON.stringify({
-            'query': 'Can you fix the above perf issue?',
-            'intent': intent,
-            'context': {
-                'source_code': buggy_code,
-                'buggy_function_call': buggy_function_call,
-                'start_line_number': start_line_number.toString(),
-                'prompt_strategy': 'instructive'
-            }
-        })
-    });
-    let data = await response.json();
-    let fix = data['response_text'].slice(0, -3).split('```csharp\n\n')[1];
+    try {
+            let response = await fetch(`${DEEPPROMPT_ENDPOINT}/query`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'DeepPrompt-Version': 'v1',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${auth_token}`,
+                'DeepPrompt-Session-ID': session_id
+            },
+            body: JSON.stringify({
+                'query': 'Can you fix the above perf issue?',
+                'intent': intent,
+                'context': {
+                    'source_code': buggy_code,
+                    'buggy_function_call': buggy_function_call,
+                    'start_line_number': start_line_number.toString(),
+                    'prompt_strategy': 'instructive'
+                }
+            })
+        });
+        let data = await response.json();
+        console.log("RESPONSE:");
+        return "fixed file";
+        // console.log(data);
+        // let fix = data['response_text'].slice(0, -3).split('```csharp\n\n')[1];
 
-    let end_line_number = find_end_of_function(buggy_code, start_line_number);
-    var lines = buggy_code.split('\n');
-    var fixed_lines = lines.slice(0, start_line_number - 1).concat(fix.split('\n')).concat(lines.slice(end_line_number + 1));
-    fix = fixed_lines.join('\n');
+        // let end_line_number = find_end_of_function(buggy_code, start_line_number);
+        // var lines = buggy_code.split('\n');
+        // var fixed_lines = lines.slice(0, start_line_number - 1).concat(fix.split('\n')).concat(lines.slice(end_line_number + 1));
+        // fix = fixed_lines.join('\n');
 
-    console.log("---------------");
-    console.log(fix);
-    return fix;
+        // console.log("---------------");
+        // console.log(fix);
+        // return fix;
+    } catch (error) {
+        console.log("Error in Trying DeepPrompt call");
+        core.setFailed(error.message);
+    }
 }
 
 async function get_deepprompt_auth(pat_token) {
