@@ -28,14 +28,14 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore
-
-      - name: Run benchmarks
-        run: dotnet run -c Release --project tests/Benchmarks/Benchmarks.csproj > benchmarks.txt
-      - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+      - name: Run Benchmarks
+        run: dotnet run -c Release --project tests/Benchmarks/Benchmarks.csproj
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: benchmarks
-          path: benchmarks.txt
+          tool: 'benchmarkdotnet'
+          output-file-path: BenchmarkDotNet.Artifacts\results\Benchmarks.StringUtilsBenchmark-report-full-compressed.json
+  
   add-comment:
     if: github.event.label.name == 'perf'
     runs-on: ubuntu-latest

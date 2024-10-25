@@ -4,7 +4,6 @@ using Microsoft.ApplicationInsights.Kubernetes;
 
 namespace Benchmarks
 {
-
     [JsonExporterAttribute.Full]
     [JsonExporterAttribute.FullCompressed]
     public class StringUtilsBenchmark
