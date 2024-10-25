@@ -194,18 +194,18 @@ async function fix_bug(auth_token, session_id, buggy_code, start_line_number, bu
         let data = await response.json();
         console.log("RESPONSE:");
         console.log(data);
-        return "fixed file";
-        // console.log(data);
-        // let fix = data['response_text'].slice(0, -3).split('```csharp\n\n')[1];
 
-        // let end_line_number = find_end_of_function(buggy_code, start_line_number);
-        // var lines = buggy_code.split('\n');
-        // var fixed_lines = lines.slice(0, start_line_number - 1).concat(fix.split('\n')).concat(lines.slice(end_line_number + 1));
-        // fix = fixed_lines.join('\n');
+        const response_text = data["response_text"];
+        console.log("RESPONSE text:");
+        console.log(response_text);
 
-        // console.log("---------------");
-        // console.log(fix);
-        // return fix;
+        const code_text_array = response_text.match(/```([^`]*)```/);
+        const code_text = code_text_array[1];
+        const code_to_remove = `csharp\n\n`;
+        const clean_code_text = code_text.substring(code_text.indexOf(code_to_remove) + code_to_remove.length);
+        return `\`\`\`csharp
+${clean_code_text}
+\`\`\``;
     } catch (error) {
         console.log("Error in Trying DeepPrompt call");
         core.setFailed(error.message);
