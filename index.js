@@ -14,14 +14,9 @@ async function run() {
         const pat_token = core.getInput('token');
         const comment = core.getInput('comment', { required: false });
 
-        const directory = './';
-        const fileExtension = '.cs';
-        const foundFiles = searchFiles(directory, fileExtension);
-        console.log(`Found files: ${foundFiles.join('\n')}`);
-
-        var auth = await get_deepprompt_auth(pat_token);
-        var auth_token = auth['access_token'];
-        var session_id = auth['session_id'];
+        // var auth = await get_deepprompt_auth(pat_token);
+        // var auth_token = auth['access_token'];
+        // var session_id = auth['session_id'];
 
         if (comment) {
             const pr_body = core.getInput('pr-body');
@@ -39,6 +34,12 @@ async function run() {
             const issue_title = core.getInput('issue-title');
             const issue_body = core.getInput('issue-body');
             const issue_number = core.getInput('issue-number');
+
+            const directory = './';
+            const fileExtension = '.cs';
+            const foundFiles = searchFiles(directory, fileExtension);
+            console.log(`Found files: ${foundFiles.join('\n')}`);
+            console.log(issue_body);
 
             const issue_metadata = JSON.parse(issue_body);
             const buggy_file_path = issue_metadata['buggy_file_path'];
