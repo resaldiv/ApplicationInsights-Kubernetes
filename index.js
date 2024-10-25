@@ -37,12 +37,16 @@ async function run() {
         const found_files = searchFiles('./', path_ending);
         console.log(`Found files for ${path_ending}: ${found_files.join('\n')}`);
 
-        console.log("---Issue metadata---");
+        console.log("---Fixed file---");
+        const file = `// ---------------------------------------------------------------------------\n// <copyright file="Scrubber.cs" company="Microsoft">\n//     Copyright (c) Microsoft Corporation.  All rights reserved.\n// </copyright>\n// ---------------------------------------------------------------------------\n\nnamespace Microsoft.ApplicationInsights.Kubernetes\n{\n    using System;\n    using System.Collections.Generic;\n    using System.Linq;\n    using System.Text.RegularExpressions;\n\n    public class Scrubber\n    {\n        public const string EmailRegExPattern = @"[a-zA-Z0-9!#$+\-^_~]+(?:\.[a-zA-Z0-9!#$+\-^_~]+)*@(?:[a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,6}";\n        public static string ScrubData(string data, char replacementChar)\n        {\n            Regex rx = new Regex(EmailRegExPattern);\n            foreach (Match match in rx.Matches(data))\n            {\n                string replacementString = new string(replacementChar, match.Value.Length);\n                data = data.Replace(match.Value, replacementString);\n            }\n\n            return data;\n        }\n    }\n}`;
+        const start_line_number = 17;
+        const bottleneck_call = "Replace";
         try {
-            const issue_metadata = JSON.parse(issue_body);
-            console.log(issue_metadata);
+            console.log("--- TRY Fixed file---");
+            const fixed_file = await fix_bug(auth_token, session_id, file, start_line_number, bottleneck_call);
+            console.log(fixed_file);
         } catch (error) {
-            console.log("Parsing JSON error");
+            console.log("Fixed file error");
             core.setFailed(error.message);
         }
     } catch (error) {
