@@ -12,56 +12,89 @@ DEEPPROMPT_ENDPOINT = "https://data-ai.microsoft.com/deepprompt/api/v1"
 
 async function run() {
     try {
-        const repo_token = core.getInput('repo-token');
+        console.log("---DeepPrompt Auth---");
         const pat_token = core.getInput('pat-token');
-        const comment = core.getInput('comment', { required: false });
+        const auth = await get_deepprompt_auth(pat_token);
+        const auth_token = auth['access_token'];
+        const session_id = auth['session_id'];
 
-        // var auth = await get_deepprompt_auth(pat_token);
-        // var auth_token = auth['access_token'];
-        // var session_id = auth['session_id'];
+        console.log("---Issue info---");
+        const issue_title = core.getInput('issue-title');
+        const issue_body = core.getInput('issue-body');
+        const issue_number = core.getInput('issue-number');
 
-        if (comment) {
-            const pr_body = core.getInput('pr-body');
-            const comment_id = core.getInput('comment-id');
-            console.log(comment_id);
-            const pr_number = core.getInput('pr-number');
-            const repo = core.getInput('repo');
-            const repo_url = `https://github.com/${repo}`;
-            const session_id = pr_body.split('Session ID: ')[1].split('.')[0];
+        console.log("---Symbol info---");
+        const parent_symbol = issue_body.split('<!-- ps: ')[1].split(' -->')[0];
+        const child_symbol = issue_body.split('<!-- s: ')[1].split(' -->')[0];
+        const parent_class_name = parent_symbol.split('!')[0].split('.').at(-1);
+        const parent_method_name = parent_symbol.split('!')[1];
+        const child_method_name = child_symbol.split('!')[1];
+        console.log(parent_symbol.split('!')[0].split('.'));
 
-            const query = comment.split('/devbot ')[1];
-            const response = await get_response(auth_token, session_id, query);
-            post_comment(repo_token, repo_url, pr_number, response);
-        } else {
-            const issue_title = core.getInput('issue-title');
-            const issue_body = core.getInput('issue-body');
-            const issue_number = core.getInput('issue-number');
-            const parent_symbol = issue_body.split('<!-- ps: ')[1].split(' -->')[0];
-            const child_symbol = issue_body.split('<!-- s: ')[1].split(' -->')[0];
+        console.log("---Files---");
+        const path_ending = `${parent_class_name}.cs`;
+        const found_files = searchFiles('./', path_ending);
+        console.log(`Found files for ${path_ending}: ${found_files.join('\n')}`);
 
-            const parent_class_name = parent_symbol.split('!')[0].split('.').at(-1);
-            const parent_method_name = parent_symbol.split('!')[1];
-            const child_method_name = child_symbol.split('!')[1];
-            console.log(parent_symbol.split('!')[0].split('.'));
-            
-            const path_ending = `${parent_class_name}.cs`;
-            const found_files = searchFiles('./', path_ending);
-            console.log(`Found files for ${path_ending}: ${found_files.join('\n')}`);
-
-            const issue_metadata = JSON.parse(issue_body);
-            const buggy_file_path = issue_metadata['buggy_file_path'];
-            const repo_url = issue_metadata['repo_url'];
-            var file = await get_file(repo_token, repo_url, buggy_file_path);
-
-            var fixed_file = await fix_bug(auth_token, session_id, file, issue_metadata['start_line_number'], issue_metadata['bottleneck_call']);
-            
-            console.log(fixed_file);
-            
-            create_pr(repo_token, repo_url, buggy_file_path, issue_title, issue_number, file, fixed_file, session_id);
-        }
+        console.log("---Issue metadata---");
+        const issue_metadata = JSON.parse(issue_body);
+        console.log(issue_metadata);
     } catch (error) {
+        console.log("Run error");
         core.setFailed(error.message);
     }
+
+    // try {
+    //     const repo_token = core.getInput('repo-token');
+    //     const pat_token = core.getInput('pat-token');
+    //     const comment = core.getInput('comment', { required: false });
+
+    //     // var auth = await get_deepprompt_auth(pat_token);
+    //     // var auth_token = auth['access_token'];
+    //     // var session_id = auth['session_id'];
+
+    //     if (comment) {
+    //         const pr_body = core.getInput('pr-body');
+    //         const comment_id = core.getInput('comment-id');
+    //         console.log(comment_id);
+    //         const pr_number = core.getInput('pr-number');
+    //         const repo = core.getInput('repo');
+    //         const repo_url = `https://github.com/${repo}`;
+    //         const session_id = pr_body.split('Session ID: ')[1].split('.')[0];
+
+    //         const query = comment.split('/devbot ')[1];
+    //         const response = await get_response(auth_token, session_id, query);
+    //         post_comment(repo_token, repo_url, pr_number, response);
+    //     } else {
+    //         const issue_title = core.getInput('issue-title');
+    //         const issue_body = core.getInput('issue-body');
+    //         const issue_number = core.getInput('issue-number');
+    //         const parent_symbol = issue_body.split('<!-- ps: ')[1].split(' -->')[0];
+    //         const child_symbol = issue_body.split('<!-- s: ')[1].split(' -->')[0];
+
+    //         const parent_class_name = parent_symbol.split('!')[0].split('.').at(-1);
+    //         const parent_method_name = parent_symbol.split('!')[1];
+    //         const child_method_name = child_symbol.split('!')[1];
+    //         console.log(parent_symbol.split('!')[0].split('.'));
+            
+    //         const path_ending = `${parent_class_name}.cs`;
+    //         const found_files = searchFiles('./', path_ending);
+    //         console.log(`Found files for ${path_ending}: ${found_files.join('\n')}`);
+
+    //         const issue_metadata = JSON.parse(issue_body);
+    //         const buggy_file_path = issue_metadata['buggy_file_path'];
+    //         const repo_url = issue_metadata['repo_url'];
+    //         var file = await get_file(repo_token, repo_url, buggy_file_path);
+
+    //         var fixed_file = await fix_bug(auth_token, session_id, file, issue_metadata['start_line_number'], issue_metadata['bottleneck_call']);
+            
+    //         console.log(fixed_file);
+            
+    //         create_pr(repo_token, repo_url, buggy_file_path, issue_title, issue_number, file, fixed_file, session_id);
+    //     }
+    // } catch (error) {
+    //     core.setFailed(error.message);
+    // }
 }
 
 function searchFiles(dir, fileExtension, files = [])
