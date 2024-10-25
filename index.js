@@ -13,7 +13,7 @@ DEEPPROMPT_ENDPOINT = "https://data-ai.microsoft.com/deepprompt/api/v1"
 async function run() {
     try {
         const repo_token = core.getInput('repo-token');
-        const pat_token = core.getInput('token');
+        const pat_token = core.getInput('pat-token');
         const comment = core.getInput('comment', { required: false });
 
         // var auth = await get_deepprompt_auth(pat_token);
