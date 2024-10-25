@@ -160,23 +160,28 @@ async function fix_bug(auth_token, session_id, buggy_code, start_line_number, bu
     return fix;
 }
 
-async function get_deepprompt_auth(access_token) {
+async function get_deepprompt_auth(pat_token) {
     try {
-        let response = await fetch(`${DEEPPROMPT_ENDPOINT}/exchange`, {
+        const response = await fetch(`${DEEPPROMPT_ENDPOINT}/exchange`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                'token': access_token,
+                'token': pat_token,
                 'provider': 'github'
             })
         });
-        let auth_token = await response.json();
+        const auth_token = await response.json();
+        if (auth_token["error"]) {
+            console.log("DeepPrompt Auth response error");
+            core.setFailed(auth_token["error"].message);
+        }
         return auth_token;
     }
     catch (error) {
+        console.log("DeepPrompt Auth catch error");
         core.setFailed(error.message);
     }
 }
