@@ -335,6 +335,8 @@ async function findBuggyFile(found_files, parent_class_name, parent_method_name,
     for (let i = 0; i < found_files.length; i++) {
         let file = found_files[i];
         const data = readData(file);
+        console.log("DATA");
+        console.log(data);
         let locations = findBugLocationInCode(
             data,
             parent_class_name,
@@ -365,6 +367,8 @@ function findBugLocationInCode(data, fileName, parentFunction, bottleneckFunctio
         parentFunctionSignature = `${fileName}(`;
     }
     var bottleneckFunctionCall = `${bottleneckFunction}(`;
+    console.log("DATA");
+    console.log(data);
     var possibleStarts = findAllOccurrences(data, parentFunctionSignature);
     return [10, 14];
   for (let i = 0; i < possibleStarts.length; i++) {
@@ -395,13 +399,15 @@ function findBugLocationInCode(data, fileName, parentFunction, bottleneckFunctio
 }
 
 function findAllOccurrences(str, substr) {
-  let result = [];
-  let idx = str.indexOf(substr);
-  while (idx !== -1) {
-    result.push(idx);
-    idx = str.indexOf(substr, idx + 1);
-  }
-  return result;
+    console.log("STR");
+    console.log(str);
+    let result = [];
+    let idx = str.indexOf(substr);
+    while (idx !== -1) {
+        result.push(idx);
+        idx = str.indexOf(substr, idx + 1);
+    }
+    return result;
 }
 
 function getBalancedEndIndex(code) {
