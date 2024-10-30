@@ -64,8 +64,18 @@ async function run() {
 
             console.log("---DeepPrompt response---");
             const start_line_number = parseInt(buggy_range[0]);
+            const end_line_number = parseInt(buggy_range[1]);
             const deepprompt_response = await get_deepprompt_response(auth_token, session_id, buggy_file_data, start_line_number, buggy_method_name);
-            console.log(deepprompt_response);
+
+            console.log("---Clean up response---");
+            const code_text_array = deepprompt_response.match(/```([^`]*)```/);
+            const code_text = code_text_array[1];
+            const code_to_remove = `csharp\n\n`;
+            const clean_code_text = code_text.substring(code_text.indexOf(code_to_remove) + code_to_remove.length);
+
+            console.log("---Fixed file---");
+            const fixed_file = fix_file(buggy_file_data, start_line_number, end_line_number, clean_code_text)
+            console.log(fixed_file);
         }
     } catch (error) {
         core.setFailed(error.message);
@@ -266,6 +276,17 @@ async function create_pr(access_token, repo_url, buggy_file_path, issue_title, i
             },
         ],
     });
+}
+
+function fix_file(buggy_file_data, start_line_number, end_line_number, clean_code_text){
+    try {
+        const lines = buggy_file_data.split('\n');
+        const fixed_lines = lines.slice(0, start_line_number - 1).concat(clean_code_text.split('\n')).concat(lines.slice(end_line_number));
+        return fixed_lines.join('\n');
+    } catch(error) {
+        console.log(error);
+        core.setFailed(`An error occured while fixing the file: ${error}`);
+    }
 }
 
 async function getLocalizationValues(found_files, parent_class_name, parent_method_name, child_method_name) {
