@@ -332,7 +332,6 @@ async function create_pr(access_token, repo_url, buggy_file_path, issue_title, i
 }
 
 async function findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name) {
-    // return ["", [10, 14], child_method_name]
     for (let i = 0; i < found_files.length; i++) {
         let file = found_files[i];
         const data = readData(file);
@@ -342,10 +341,9 @@ async function findBuggyFile(found_files, parent_class_name, parent_method_name,
             parent_method_name,
             child_method_name
         );
-        return ["", [10, 14], child_method_name]
-        // if (locations.length > 0) {
-        //     return [file.toString(), locations, child_method_name];
-        // }
+        if (locations.length > 0) {
+            return [file.toString(), locations, child_method_name];
+        }
     }
 }
 
@@ -367,8 +365,8 @@ function findBugLocationInCode(data, fileName, parentFunction, bottleneckFunctio
         parentFunctionSignature = `${fileName}(`;
     }
     var bottleneckFunctionCall = `${bottleneckFunction}(`;
-    return [10, 14];
     var possibleStarts = findAllOccurrences(data, parentFunctionSignature);
+    return [10, 14];
   for (let i = 0; i < possibleStarts.length; i++) {
     let start = possibleStarts[i];
     let end = getBalancedEndIndex(code.substring(start));
