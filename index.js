@@ -22,25 +22,31 @@ async function run() {
         const issue_title = core.getInput('issue-title');
         const issue_body = core.getInput('issue-body');
         const issue_number = core.getInput('issue-number');
-        console.log("ISSUE TITLE");
-        console.log(issue_title);
-        console.log("ISSUE BODY");
-        console.log(issue_body);
-        console.log("ISSUE NUMBER");
-        console.log(issue_number);
 
-        // console.log("---Symbol info---");
-        // const parent_symbol = issue_body.split('<!-- ps: ')[1].split(' -->')[0];
-        // const child_symbol = issue_body.split('<!-- s: ')[1].split(' -->')[0];
-        // const parent_class_name = parent_symbol.split('!')[0].split('.').at(-1);
-        // const parent_method_name = parent_symbol.split('!')[1];
-        // const child_method_name = child_symbol.split('!')[1];
-        // console.log(parent_symbol.split('!')[0].split('.'));
+        console.log("---Symbol info---");
+        const parent_symbol = issue_body.split('<!-- ps: ')[1].split(' -->')[0];
+        const child_symbol = issue_body.split('<!-- s: ')[1].split(' -->')[0];
+        const parent_class_name = parent_symbol.split('!')[0].split('.').at(-1);
+        const parent_method_name = parent_symbol.split('!')[1];
+        const child_method_name = child_symbol.split('!')[1];
 
-        // console.log("---Files---");
-        // const path_ending = `${parent_class_name}.cs`;
-        // const found_files = searchFiles('./', path_ending);
-        // console.log(`Found files for ${path_ending}: ${found_files.join('\n')}`);
+        console.log("---Files---");
+        const path_ending = `${parent_class_name}.cs`;
+        const found_files = searchFiles('./', path_ending);
+
+        console.log("---Localization---");
+        console.log(`Found files for ${path_ending}: ${found_files.join('\n')}`);
+        console.log("Parent class name: " + parent_class_name);
+        console.log("Parent method name: " + parent_method_name);
+        console.log("Child method name: " + child_method_name);
+        // const localization = await findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name);
+
+        // console.log("---Issue metadata---");
+        // const start_line_number = 14;
+        // const buggy_file_path = path_ending;
+        // const repo = core.getInput('repo');
+        // const repo_url = `https://github.com/${repo}`;
+
 
         // console.log("---Fixed file---");
         // const file = `// ---------------------------------------------------------------------------\n// <copyright file="Scrubber.cs" company="Microsoft">\n//     Copyright (c) Microsoft Corporation.  All rights reserved.\n// </copyright>\n// ---------------------------------------------------------------------------\n\nnamespace Microsoft.ApplicationInsights.Kubernetes\n{\n    using System;\n    using System.Collections.Generic;\n    using System.Linq;\n    using System.Text.RegularExpressions;\n\n    public class Scrubber\n    {\n        public const string EmailRegExPattern = @"[a-zA-Z0-9!#$+\-^_~]+(?:\.[a-zA-Z0-9!#$+\-^_~]+)*@(?:[a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,6}";\n        public static string ScrubData(string data, char replacementChar)\n        {\n            Regex rx = new Regex(EmailRegExPattern);\n            foreach (Match match in rx.Matches(data))\n            {\n                string replacementString = new string(replacementChar, match.Value.Length);\n                data = data.Replace(match.Value, replacementString);\n            }\n\n            return data;\n        }\n    }\n}`;
@@ -315,5 +321,21 @@ async function create_pr(access_token, repo_url, buggy_file_path, issue_title, i
         ],
     });
 }
+
+// async function findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name) {
+//     for (let i = 0; i < found_files.length; i++) {
+//         let file = found_files[i];
+//         let code = "";
+//         let locations = findBugLocationInCode(
+//             code,
+//             parent_class_name,
+//             parent_method_name,
+//             child_method_name
+//         );
+//         if (locations.length > 0) {
+//             return [file.toString(), locations, child_method_name];
+//         }
+//     }
+// }
 
 run();
