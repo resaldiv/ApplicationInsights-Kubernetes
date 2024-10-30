@@ -12,119 +12,62 @@ DEEPPROMPT_ENDPOINT = "https://data-ai.microsoft.com/deepprompt/api/v1"
 
 async function run() {        
     try {
-        // console.log("---DeepPrompt Auth---");
-        // const pat_token = core.getInput('pat-token');
-        // const auth = await get_deepprompt_auth(pat_token);
-        // const auth_token = auth['access_token'];
-        // const session_id = auth['session_id'];
+        console.log("---DeepPrompt Auth---");
+        const pat_token = core.getInput('pat-token');
+        const auth = await get_deepprompt_auth(pat_token);
+        const auth_token = auth['access_token'];
+        const session_id = auth['session_id'];
 
-        console.log("---Issue info---");
-        const issue_title = core.getInput('issue-title');
-        const issue_body = core.getInput('issue-body');
-        const issue_number = core.getInput('issue-number');
+        const repo_token = core.getInput('repo-token');
+        const comment = core.getInput('comment', { required: false });
+        
+        if (comment) {
+            const pr_body = core.getInput('pr-body');
+            const comment_id = core.getInput('comment-id');
+            console.log(comment_id);
+            const pr_number = core.getInput('pr-number');
+            const repo = core.getInput('repo');
+            const repo_url = `https://github.com/${repo}`;
+            const session_id = pr_body.split('Session ID: ')[1].split('.')[0];
 
-        console.log("---Symbol info---");
-        const parent_symbol = issue_body.split('<!-- ps: ')[1].split(' -->')[0];
-        const child_symbol = issue_body.split('<!-- s: ')[1].split(' -->')[0];
-        const parent_class_name = parent_symbol.split('!')[0].split('.').at(-1);
-        const parent_method_name = parent_symbol.split('!')[1];
-        const child_method_name = child_symbol.split('!')[1];
+            const query = comment.split('/devbot ')[1];
+            const response = await get_response(auth_token, session_id, query);
+            post_comment(repo_token, repo_url, pr_number, response);
+        } else {
+            console.log("---Issue info---");
+            const issue_title = core.getInput('issue-title');
+            const issue_body = core.getInput('issue-body');
+            const issue_number = core.getInput('issue-number');
 
-        console.log("---Files---");
-        const path_ending = `${parent_class_name}.cs`;
-        const found_files = searchFiles('./', path_ending);
+            console.log("---Symbol info---");
+            const parent_symbol = issue_body.split('<!-- ps: ')[1].split(' -->')[0];
+            const child_symbol = issue_body.split('<!-- s: ')[1].split(' -->')[0];
+            const parent_class_name = parent_symbol.split('!')[0].split('.').at(-1);
+            const parent_method_name = parent_symbol.split('!')[1];
+            const child_method_name = child_symbol.split('!')[1];
 
-        console.log("---Localization---");
-        console.log(`Found files for ${path_ending}: ${found_files.join('\n')}`);
-        console.log("Parent class name: " + parent_class_name);
-        console.log("Parent method name: " + parent_method_name);
-        console.log("Child method name: " + child_method_name);
+            console.log("---Files---");
+            const path_ending = `${parent_class_name}.cs`;
+            const found_files = searchFiles('./', path_ending);
+            console.log(`Found files for ${path_ending}: ${found_files.join('\n')}`);
 
-        const localization = await findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name);
-        const buggy_file_path = localization[0];
-        const startLineNumber = parseInt(localization[1][0]) - 1;
-        const endLineNumber = parseInt(localization[1][1]) - 1;
-        const child_method_name2 = localization[2];
-        console.log(`Buggy file path: ${buggy_file_path}`);
-        console.log(`Start line number: ${startLineNumber}`);
-        console.log(`End line number: ${endLineNumber}`);
-        console.log(`Child method name: ${child_method_name2}`);
+            console.log("---Localization---");
+            const localization = await findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name);
+            const buggy_file_path = localization[0];
+            const start_line_number = parseInt(localization[1][0]) - 1;
+            const end_line_number = parseInt(localization[1][1]) - 1;
+            const buggy_function_call = localization[2];
+            console.log(`Buggy file path: ${buggy_file_path}`);
+            console.log(`Start line number: ${start_line_number}`);
+            console.log(`End line number: ${end_line_number}`);
+            console.log(`Buggy method name: ${buggy_function_call}`);
 
-        // console.log("---Issue metadata---");
-        // const start_line_number = 14;
-        // const buggy_file_path = path_ending;
-        // const repo = core.getInput('repo');
-        // const repo_url = `https://github.com/${repo}`;
-
-
-        // console.log("---Fixed file---");
-        // const file = `// ---------------------------------------------------------------------------\n// <copyright file="Scrubber.cs" company="Microsoft">\n//     Copyright (c) Microsoft Corporation.  All rights reserved.\n// </copyright>\n// ---------------------------------------------------------------------------\n\nnamespace Microsoft.ApplicationInsights.Kubernetes\n{\n    using System;\n    using System.Collections.Generic;\n    using System.Linq;\n    using System.Text.RegularExpressions;\n\n    public class Scrubber\n    {\n        public const string EmailRegExPattern = @"[a-zA-Z0-9!#$+\-^_~]+(?:\.[a-zA-Z0-9!#$+\-^_~]+)*@(?:[a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,6}";\n        public static string ScrubData(string data, char replacementChar)\n        {\n            Regex rx = new Regex(EmailRegExPattern);\n            foreach (Match match in rx.Matches(data))\n            {\n                string replacementString = new string(replacementChar, match.Value.Length);\n                data = data.Replace(match.Value, replacementString);\n            }\n\n            return data;\n        }\n    }\n}`;
-        // const start_line_number = 17;
-        // const bottleneck_call = "Replace";
-        // try {
-        //     console.log("--- TRY Fixed file---");
-        //     const fixed_file = await fix_bug(auth_token, session_id, file, start_line_number, bottleneck_call);
-        //     console.log(fixed_file);
-        // } catch (error) {
-        //     console.log("Fixed file error");
-        //     core.setFailed(error.message);
-        // }
+            // var fixed_file = await fix_bug(auth_token, session_id, file, start_line_number, buggy_function_call);
+            // create_pr(repo_token, repo_url, buggy_file_path, issue_title, issue_number, file, fixed_file, session_id);
+        }
     } catch (error) {
-        console.log("Run error");
         core.setFailed(error.message);
     }
-
-    // try {
-    //     const repo_token = core.getInput('repo-token');
-    //     const pat_token = core.getInput('pat-token');
-    //     const comment = core.getInput('comment', { required: false });
-
-    //     // var auth = await get_deepprompt_auth(pat_token);
-    //     // var auth_token = auth['access_token'];
-    //     // var session_id = auth['session_id'];
-
-    //     if (comment) {
-    //         const pr_body = core.getInput('pr-body');
-    //         const comment_id = core.getInput('comment-id');
-    //         console.log(comment_id);
-    //         const pr_number = core.getInput('pr-number');
-    //         const repo = core.getInput('repo');
-    //         const repo_url = `https://github.com/${repo}`;
-    //         const session_id = pr_body.split('Session ID: ')[1].split('.')[0];
-
-    //         const query = comment.split('/devbot ')[1];
-    //         const response = await get_response(auth_token, session_id, query);
-    //         post_comment(repo_token, repo_url, pr_number, response);
-    //     } else {
-    //         const issue_title = core.getInput('issue-title');
-    //         const issue_body = core.getInput('issue-body');
-    //         const issue_number = core.getInput('issue-number');
-    //         const parent_symbol = issue_body.split('<!-- ps: ')[1].split(' -->')[0];
-    //         const child_symbol = issue_body.split('<!-- s: ')[1].split(' -->')[0];
-
-    //         const parent_class_name = parent_symbol.split('!')[0].split('.').at(-1);
-    //         const parent_method_name = parent_symbol.split('!')[1];
-    //         const child_method_name = child_symbol.split('!')[1];
-    //         console.log(parent_symbol.split('!')[0].split('.'));
-            
-    //         const path_ending = `${parent_class_name}.cs`;
-    //         const found_files = searchFiles('./', path_ending);
-    //         console.log(`Found files for ${path_ending}: ${found_files.join('\n')}`);
-
-    //         const issue_metadata = JSON.parse(issue_body);
-    //         const buggy_file_path = issue_metadata['buggy_file_path'];
-    //         const repo_url = issue_metadata['repo_url'];
-    //         var file = await get_file(repo_token, repo_url, buggy_file_path);
-
-    //         var fixed_file = await fix_bug(auth_token, session_id, file, issue_metadata['start_line_number'], issue_metadata['bottleneck_call']);
-            
-    //         console.log(fixed_file);
-            
-    //         create_pr(repo_token, repo_url, buggy_file_path, issue_title, issue_number, file, fixed_file, session_id);
-    //     }
-    // } catch (error) {
-    //     core.setFailed(error.message);
-    // }
 }
 
 function searchFiles(dir, fileExtension, files = [])
@@ -279,8 +222,8 @@ async function get_file(access_token, repo_url, buggy_file_path) {
     }
 }
 
-function find_end_of_function(code, start_line_number) {
-    var lines = code.split('\n');
+function find_end_of_function(data, start_line_number) {
+    var lines = data.split('\n');
     var i = start_line_number;
     var open_braces = 0;
     while (i < lines.length) {
@@ -334,9 +277,7 @@ async function create_pr(access_token, repo_url, buggy_file_path, issue_title, i
 async function findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name) {
     for (let i = 0; i < found_files.length; i++) {
         let file = found_files[i];
-        const data = readData(file);
-        console.log("DATA");
-        console.log(data);
+        const data = fs.readFileSync(file, 'utf8');
         let locations = findBugLocationInCode(
             data,
             parent_class_name,
@@ -347,39 +288,44 @@ async function findBuggyFile(found_files, parent_class_name, parent_method_name,
             return [file.toString(), locations, child_method_name];
         }
     }
-}
 
-function readData(file) {
-    fs.readFile(file, 'utf8', (err, data) => {
-        if (err) {
-            console.error(err);
-            return;
+    for (let i = 0; i < files.length; i++) {
+        let file = found_files[i];
+        let data = fs.readFileSync(file, 'utf8');
+        let locations = findBugLocationInCode(
+            data,
+            parent_class_name,
+            parent_method_name,
+            child_method_name,
+            true
+        );
+        if (locations.length > 0) {
+            return [file.toString(), locations, ""];
         }
-        return data
-    });
+    }
+
+    return ["", [], ""];
 }
 
 function findBugLocationInCode(data, fileName, parentFunction, bottleneckFunction, ignoreBottleneck = false) {
-    var parentFunctionSignature = "";
-    if (parentFunction !== "ctor") {
-        parentFunctionSignature = `${parentFunction}(`;
-    } else {
-        parentFunctionSignature = `${fileName}(`;
-    }
-    var bottleneckFunctionCall = `${bottleneckFunction}(`;
-    console.log("DATA");
-    console.log(data);
-    var possibleStarts = findAllOccurrences(data, parentFunctionSignature);
-    return [10, 14];
+  let parentFunctionSignature = "";
+  if (parentFunction !== "ctor") {
+    parentFunctionSignature = `${parentFunction}(`;
+  } else {
+    parentFunctionSignature = `${fileName}(`;
+  }
+  const bottleneckFunctionCall = `${bottleneckFunction}(`;
+
+  const possibleStarts = findAllOccurrences(data, parentFunctionSignature);
   for (let i = 0; i < possibleStarts.length; i++) {
     let start = possibleStarts[i];
-    let end = getBalancedEndIndex(code.substring(start));
-    let block = code.substring(start, start + end);
+    let end = getBalancedEndIndex(data.substring(start));
+    let block = data.substring(start, start + end);
     if (block.includes(bottleneckFunctionCall)) {
-      var bugStarts = findAllOccurrences(block, bottleneckFunctionCall);
+      const bugStarts = findAllOccurrences(block, bottleneckFunctionCall);
       if (bugStarts.length > 0) {
-        let blockStartLineNumber = code.substring(0, start).split("\n").length;
-        let blockEndLineNumber = code
+        let blockStartLineNumber = data.substring(0, start).split("\n").length;
+        let blockEndLineNumber = data
           .substring(0, start + end)
           .split("\n").length;
         return [blockStartLineNumber, blockEndLineNumber];
@@ -387,10 +333,8 @@ function findBugLocationInCode(data, fileName, parentFunction, bottleneckFunctio
     }
 
     if (ignoreBottleneck) {
-      let blockStartLineNumber = code.substring(0, start).split("\n").length;
-      let blockEndLineNumber = code
-        .substring(0, start + end)
-        .split("\n").length;
+      let blockStartLineNumber = data.substring(0, start).split("\n").length;
+      let blockEndLineNumber = data.substring(0, start + end).split("\n").length;
       return [blockStartLineNumber, blockEndLineNumber];
     }
   }
@@ -399,8 +343,6 @@ function findBugLocationInCode(data, fileName, parentFunction, bottleneckFunctio
 }
 
 function findAllOccurrences(str, substr) {
-    console.log("STR");
-    console.log(str);
     let result = [];
     let idx = str.indexOf(substr);
     while (idx !== -1) {
@@ -410,11 +352,11 @@ function findAllOccurrences(str, substr) {
     return result;
 }
 
-function getBalancedEndIndex(code) {
+function getBalancedEndIndex(data) {
   let openCount = 0;
   let index = 0;
-  while (index < code.length) {
-    const ch = code[index];
+  while (index < data.length) {
+    const ch = data[index];
     if (ch === "{") {
       openCount += 1;
     } else if (ch === "}") {
