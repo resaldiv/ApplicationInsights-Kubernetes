@@ -332,24 +332,30 @@ async function create_pr(access_token, repo_url, buggy_file_path, issue_title, i
 }
 
 async function findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name) {
+    return ["", [10, 14], child_method_name]
     for (let i = 0; i < found_files.length; i++) {
         let file = found_files[i];
-        fs.readFile(file, 'utf8', (err, data) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
-            let locations = findBugLocationInCode(
-                data,
-                parent_class_name,
-                parent_method_name,
-                child_method_name
-            );
-            if (locations.length > 0) {
-                return [file.toString(), locations, child_method_name];
-            }
-        });
+        // const data = readData(file);
+        // let locations = findBugLocationInCode(
+        //     data,
+        //     parent_class_name,
+        //     parent_method_name,
+        //     child_method_name
+        // );
+        // if (locations.length > 0) {
+        //     return [file.toString(), locations, child_method_name];
+        // }
     }
+}
+
+function readData(file) {
+    fs.readFile(file, 'utf8', (err, data) => {
+        if (err) {
+            console.error(err);
+            return;
+        }
+        return data
+    });
 }
 
 function findBugLocationInCode(data, fileName, parentFunction, bottleneckFunction, ignoreBottleneck = false) {
@@ -361,9 +367,6 @@ function findBugLocationInCode(data, fileName, parentFunction, bottleneckFunctio
     }
     var bottleneckFunctionCall = `${bottleneckFunction}(`;
     var possibleStarts = findAllOccurrences(data, parentFunctionSignature);
-
-    console.log("POSSIBLE STARTS");
-    console.log(possibleStarts);
     return [10, 14];
   for (let i = 0; i < possibleStarts.length; i++) {
     let start = possibleStarts[i];
@@ -395,12 +398,9 @@ function findBugLocationInCode(data, fileName, parentFunction, bottleneckFunctio
 function findAllOccurrences(str, substr) {
   let result = [];
   let idx = str.indexOf(substr);
-  console.log("IDX", idx);
   while (idx !== -1) {
     result.push(idx);
-    console.log("str", str);
     idx = str.indexOf(substr, idx + 1);
-    console.log("IDX", idx);
   }
   return result;
 }
