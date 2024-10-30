@@ -150,7 +150,7 @@ async function get_deepprompt_response(auth_token, session_id, buggy_file_data, 
                 'query': 'Can you fix the above perf issue?',
                 'intent': intent,
                 'context': {
-                    'source_code': JSON.stringify(buggy_file_data),
+                    'source_code': buggy_file_data,
                     'buggy_function_call': buggy_method_name,
                     'start_line_number': start_line_number.toString(),
                     'prompt_strategy': prompt_strategy
