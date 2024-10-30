@@ -335,7 +335,7 @@ async function findBuggyFile(found_files, parent_class_name, parent_method_name,
     for (let i = 0; i < found_files.length; i++) {
         let file = found_files[i];
         let code = "";
-        fs.readFile(path, 'utf8', (err, data) => {
+        fs.readFile(file, 'utf8', (err, data) => {
             if (err) {
                 console.error(err);
                 return;
