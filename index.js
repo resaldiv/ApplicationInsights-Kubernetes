@@ -334,26 +334,25 @@ async function create_pr(access_token, repo_url, buggy_file_path, issue_title, i
 async function findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name) {
     for (let i = 0; i < found_files.length; i++) {
         let file = found_files[i];
-        return [file.toString(), [10, 14], child_method_name];
-        // let code = "";
-        // fs.readFile(path, 'utf8', (err, data) => {
-        //     if (err) {
-        //         console.error(err);
-        //         return;
-        //     }
-        //     code = data;
-        // });
-        // console.log("CODE");
-        // console.log(code);
-        // let locations = findBugLocationInCode(
-        //     code,
-        //     parent_class_name,
-        //     parent_method_name,
-        //     child_method_name
-        // );
-        // if (locations.length > 0) {
-        //     return [file.toString(), locations, child_method_name];
-        // }
+        let code = "";
+        fs.readFile(path, 'utf8', (err, data) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            code = data;
+        });
+        console.log("CODE");
+        console.log(code);
+        let locations = findBugLocationInCode(
+            code,
+            parent_class_name,
+            parent_method_name,
+            child_method_name
+        );
+        if (locations.length > 0) {
+            return [file.toString(), locations, child_method_name];
+        }
     }
 }
 
