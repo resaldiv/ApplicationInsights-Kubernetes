@@ -161,7 +161,7 @@ async function get_deepprompt_response(auth_token, session_id, buggy_file_data, 
         console.log("Response:");
         console.log(response_json);
 
-        const response_text = data["response_text"];
+        const response_text = response_json["response_text"];
         console.log("Response text:");
         console.log(response_text);
         return response_text;
