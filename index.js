@@ -276,6 +276,8 @@ async function getLocalizationValues(found_files, parent_class_name, parent_meth
     for (let i = 0; i < found_files.length; i++) {
         const file = found_files[i];
         const file_data = fs.readFileSync(file, 'utf8');
+        console.log("FILE DATA");
+        console.log(file_data);
         const buggy_range = getBuggyRange(
             file_data,
             parent_class_name,
