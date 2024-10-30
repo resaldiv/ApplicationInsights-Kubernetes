@@ -136,6 +136,14 @@ async function get_deepprompt_response(auth_token, session_id, buggy_file_data, 
 {
     const intent = 'perf_fix';
     const prompt_strategy = 'instructive';
+    const context = {
+        'source_code': buggy_file_data,
+        'buggy_function_call': buggy_method_name,
+        'start_line_number': start_line_number.toString(),
+        'prompt_strategy': prompt_strategy
+    };
+    console.log("CONTEXT");
+    console.log(context);
     try {
         const response = await fetch(`${DEEPPROMPT_ENDPOINT}/query`, {
             method: 'POST',
