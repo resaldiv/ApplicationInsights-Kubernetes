@@ -39,7 +39,16 @@ async function run() {
         console.log("Parent class name: " + parent_class_name);
         console.log("Parent method name: " + parent_method_name);
         console.log("Child method name: " + child_method_name);
-        // const localization = await findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name);
+
+        const localization = await findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name);
+        const buggy_file_path = localization[0];
+        const startLineNumber = parseInt(localization[1][0]) - 1;
+        const endLineNumber = parseInt(localization[1][1]) - 1;
+        const child_method_name2 = localization[2];
+        console.log(`Buggy file path: ${buggy_file_path}`);
+        console.log(`Start line number: ${startLineNumber}`);
+        console.log(`End line number: ${endLineNumber}`);
+        console.log(`Child method name: ${child_method_name2}`);
 
         // console.log("---Issue metadata---");
         // const start_line_number = 14;
@@ -322,20 +331,96 @@ async function create_pr(access_token, repo_url, buggy_file_path, issue_title, i
     });
 }
 
-// async function findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name) {
-//     for (let i = 0; i < found_files.length; i++) {
-//         let file = found_files[i];
-//         let code = "";
-//         let locations = findBugLocationInCode(
-//             code,
-//             parent_class_name,
-//             parent_method_name,
-//             child_method_name
-//         );
-//         if (locations.length > 0) {
-//             return [file.toString(), locations, child_method_name];
-//         }
-//     }
-// }
+async function findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name) {
+    for (let i = 0; i < found_files.length; i++) {
+        let file = found_files[i];
+        return [file.toString(), [10, 14], child_method_name];
+        // let code = "";
+        // fs.readFile(path, 'utf8', (err, data) => {
+        //     if (err) {
+        //         console.error(err);
+        //         return;
+        //     }
+        //     code = data;
+        // });
+        // console.log("CODE");
+        // console.log(code);
+        // let locations = findBugLocationInCode(
+        //     code,
+        //     parent_class_name,
+        //     parent_method_name,
+        //     child_method_name
+        // );
+        // if (locations.length > 0) {
+        //     return [file.toString(), locations, child_method_name];
+        // }
+    }
+}
+
+function findBugLocationInCode(code, fileName, parentFunction, bottleneckFunction, ignoreBottleneck = false) {
+    return [10, 14];
+  var parentFunctionSignature = "";
+  if (parentFunction !== "ctor") {
+    parentFunctionSignature = `${parentFunction}(`;
+  } else {
+    parentFunctionSignature = `${fileName}(`;
+  }
+  var bottleneckFunctionCall = `${bottleneckFunction}(`;
+  var possibleStarts = findAllOccurrences(code, parentFunctionSignature);
+  for (let i = 0; i < possibleStarts.length; i++) {
+    let start = possibleStarts[i];
+    let end = getBalancedEndIndex(code.substring(start));
+    let block = code.substring(start, start + end);
+    if (block.includes(bottleneckFunctionCall)) {
+      var bugStarts = findAllOccurrences(block, bottleneckFunctionCall);
+      if (bugStarts.length > 0) {
+        let blockStartLineNumber = code.substring(0, start).split("\n").length;
+        let blockEndLineNumber = code
+          .substring(0, start + end)
+          .split("\n").length;
+        return [blockStartLineNumber, blockEndLineNumber];
+      }
+    }
+
+    if (ignoreBottleneck) {
+      let blockStartLineNumber = code.substring(0, start).split("\n").length;
+      let blockEndLineNumber = code
+        .substring(0, start + end)
+        .split("\n").length;
+      return [blockStartLineNumber, blockEndLineNumber];
+    }
+  }
+
+  return [];
+}
+
+function findAllOccurrences(str, substr) {
+  let result = [];
+  let idx = str.indexOf(substr);
+  while (idx !== -1) {
+    result.push(idx);
+    idx = str.indexOf(substr, idx + 1);
+  }
+  return result;
+}
+
+function getBalancedEndIndex(code) {
+  let openCount = 0;
+  let index = 0;
+  while (index < code.length) {
+    const ch = code[index];
+    if (ch === "{") {
+      openCount += 1;
+    } else if (ch === "}") {
+      openCount -= 1;
+      if (openCount === 0) {
+        return index;
+      }
+    }
+    index += 1;
+  }
+  return 0;
+}
+
 
 run();
