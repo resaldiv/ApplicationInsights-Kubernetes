@@ -134,6 +134,8 @@ async function get_response(auth_token, session_id, query)
 
 async function get_deepprompt_response(auth_token, session_id, buggy_file_data, start_line_number, buggy_method_name)
 {
+    console.log("JSON");
+    console.log(JSON.stringify(buggy_file_data));
     const intent = 'perf_fix';
     const prompt_strategy = 'instructive';
     try {
@@ -158,8 +160,10 @@ async function get_deepprompt_response(auth_token, session_id, buggy_file_data, 
             })
         });
         const response_json = await response.json();
-        console.log("RESPONSE");
-        console.log(response_json);
+        if (response_json["error"]) {
+            core.setFailed(response_json["error"].message);
+            return "";
+        }
         return response_json["response_text"];
     } catch (error) {
         console.log("Error in obtaining a response from DeepPrompt");
