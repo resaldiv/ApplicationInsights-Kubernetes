@@ -10,7 +10,7 @@ const path = require('path');
 
 DEEPPROMPT_ENDPOINT = "https://data-ai.microsoft.com/deepprompt/api/v1"
 
-async function run() {
+async function run() {        
     try {
         // console.log("---DeepPrompt Auth---");
         // const pat_token = core.getInput('pat-token');
@@ -334,6 +334,8 @@ async function create_pr(access_token, repo_url, buggy_file_path, issue_title, i
 async function findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name) {
     for (let i = 0; i < found_files.length; i++) {
         let file = found_files[i];
+        console.log("FILE");
+        console.log(file);
         let code = "";
         fs.readFile(file, 'utf8', (err, data) => {
             if (err) {
@@ -341,6 +343,8 @@ async function findBuggyFile(found_files, parent_class_name, parent_method_name,
                 return;
             }
             code = data;
+            console.log("DATA");
+            console.log(data);
         });
         console.log("CODE");
         console.log(code);
