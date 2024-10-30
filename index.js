@@ -62,10 +62,10 @@ async function run() {
             console.log(`Buggy range: ${buggy_range}`);
             console.log(`Buggy file data:\n${buggy_file_data}`);
 
+            console.log("---DeepPrompt response---");
             const start_line_number = parseInt(buggy_range[0]);
-            const end_line_number = parseInt(buggy_range[1]);
             const deepprompt_response = await get_deepprompt_response(auth_token, session_id, buggy_file_data, start_line_number, buggy_method_name);
-            // create_pr(repo_token, repo_url, buggy_file_path, issue_title, issue_number, file, fixed_file, session_id);
+            console.log(deepprompt_response);
         }
     } catch (error) {
         core.setFailed(error.message);
@@ -158,15 +158,9 @@ async function get_deepprompt_response(auth_token, session_id, buggy_file_data, 
             })
         });
         const response_json = await response.json();
-        console.log("Response:");
-        console.log(response_json);
-
-        const response_text = response_json["response_text"];
-        console.log("Response text:");
-        console.log(response_text);
-        return response_text;
+        return response_json["response_text"];
     } catch (error) {
-        console.log("Error in trying DeepPrompt call");
+        console.log("Error in obtaining a response from DeepPrompt");
         core.setFailed(error.message);
     }
 }
