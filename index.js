@@ -394,12 +394,13 @@ function findBugLocationInCode(data, fileName, parentFunction, bottleneckFunctio
 
 function findAllOccurrences(str, substr) {
   let result = [];
-  console.log("IDX", idx);
   let idx = str.indexOf(substr);
+  console.log("IDX", idx);
   while (idx !== -1) {
     result.push(idx);
     console.log("str", str);
     idx = str.indexOf(substr, idx + 1);
+    console.log("IDX", idx);
   }
   return result;
 }
