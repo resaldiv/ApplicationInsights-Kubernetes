@@ -134,6 +134,8 @@ async function get_response(auth_token, session_id, query)
 
 async function get_deepprompt_response(auth_token, session_id, buggy_file_data, start_line_number, buggy_method_name)
 {
+    console.log("BUGGY FILE DATA");
+    console.log(buggy_file_data);
     const intent = 'perf_fix';
     const prompt_strategy = 'instructive';
     const context = {
@@ -276,8 +278,6 @@ async function getLocalizationValues(found_files, parent_class_name, parent_meth
     for (let i = 0; i < found_files.length; i++) {
         const file = found_files[i];
         const file_data = fs.readFileSync(file, 'utf8');
-        console.log("FILE DATA");
-        console.log(file_data);
         const buggy_range = getBuggyRange(
             file_data,
             parent_class_name,
