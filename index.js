@@ -134,8 +134,6 @@ async function get_response(auth_token, session_id, query)
 
 async function get_deepprompt_response(auth_token, session_id, buggy_file_data, start_line_number, buggy_method_name)
 {
-    console.log("JSON");
-    console.log(JSON.stringify(buggy_file_data));
     const intent = 'perf_fix';
     const prompt_strategy = 'instructive';
     try {
@@ -318,14 +316,14 @@ function getBuggyRange(file_data, parent_class_name, parent_method_name, child_m
             if (bug_starts.length > 0) {
                 const start_line_number = file_data.substring(0, start).split("\n").length;
                 const end_line_number = file_data.substring(0, start + end).split("\n").length;
-                return [start_line_number - 1, end_line_number - 1];
+                return [start_line_number, end_line_number];
             }
         }
 
         if (ignore_bottleneck) {
             const start_line_number = file_data.substring(0, start).split("\n").length;
             const end_line_number = file_data.substring(0, start + end).split("\n").length;
-            return [start_line_number - 1, end_line_number - 1];
+            return [start_line_number, end_line_number];
         }
     }
 
