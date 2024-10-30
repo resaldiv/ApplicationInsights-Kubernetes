@@ -62,9 +62,9 @@ async function run() {
             console.log(`Buggy range: ${buggy_range}`);
             console.log(`Buggy file data:\n${buggy_file_data}`);
 
-            // const start_line_number = parseInt(localization[2][0]) - 1;
-            // const end_line_number = parseInt(localization[2][1]) - 1;
-            // var fixed_file = await fix_bug(auth_token, session_id, file, start_line_number, buggy_function_call);
+            const start_line_number = parseInt(buggy_range[0]);
+            const end_line_number = parseInt(buggy_range[1]);
+            const deepprompt_response = await get_deepprompt_response(auth_token, session_id, buggy_file_data, start_line_number, buggy_method_name);
             // create_pr(repo_token, repo_url, buggy_file_path, issue_title, issue_number, file, fixed_file, session_id);
         }
     } catch (error) {
@@ -132,11 +132,12 @@ async function get_response(auth_token, session_id, query)
     return response_text;
 }
 
-async function fix_bug(auth_token, session_id, buggy_code, start_line_number, buggy_function_call)
+async function get_deepprompt_response(auth_token, session_id, buggy_file_data, start_line_number, buggy_method_name)
 {
-    var intent = 'perf_fix';
+    const intent = 'perf_fix';
+    const prompt_strategy = 'instructive';
     try {
-            let response = await fetch(`${DEEPPROMPT_ENDPOINT}/query`, {
+        const response = await fetch(`${DEEPPROMPT_ENDPOINT}/query`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -149,30 +150,23 @@ async function fix_bug(auth_token, session_id, buggy_code, start_line_number, bu
                 'query': 'Can you fix the above perf issue?',
                 'intent': intent,
                 'context': {
-                    'source_code': buggy_code,
-                    'buggy_function_call': buggy_function_call,
+                    'source_code': buggy_file_data,
+                    'buggy_function_call': buggy_method_name,
                     'start_line_number': start_line_number.toString(),
-                    'prompt_strategy': 'instructive'
+                    'prompt_strategy': prompt_strategy
                 }
             })
         });
-        let data = await response.json();
-        console.log("RESPONSE:");
-        console.log(data);
+        const response_json = await response.json();
+        console.log("Response:");
+        console.log(response_json);
 
         const response_text = data["response_text"];
-        console.log("RESPONSE text:");
+        console.log("Response text:");
         console.log(response_text);
-
-        const code_text_array = response_text.match(/```([^`]*)```/);
-        const code_text = code_text_array[1];
-        const code_to_remove = `csharp\n\n`;
-        const clean_code_text = code_text.substring(code_text.indexOf(code_to_remove) + code_to_remove.length);
-        return `\`\`\`csharp
-${clean_code_text}
-\`\`\``;
+        return response_text;
     } catch (error) {
-        console.log("Error in Trying DeepPrompt call");
+        console.log("Error in trying DeepPrompt call");
         core.setFailed(error.message);
     }
 }
@@ -324,14 +318,14 @@ function getBuggyRange(file_data, parent_class_name, parent_method_name, child_m
             if (bug_starts.length > 0) {
                 const start_line_number = file_data.substring(0, start).split("\n").length;
                 const end_line_number = file_data.substring(0, start + end).split("\n").length;
-                return [start_line_number, end_line_number];
+                return [start_line_number - 1, end_line_number - 1];
             }
         }
 
         if (ignore_bottleneck) {
             const start_line_number = file_data.substring(0, start).split("\n").length;
             const end_line_number = file_data.substring(0, start + end).split("\n").length;
-            return [start_line_number, end_line_number];
+            return [start_line_number - 1, end_line_number - 1];
         }
     }
 
