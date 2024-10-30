@@ -339,6 +339,8 @@ async function findBuggyFile(found_files, parent_class_name, parent_method_name,
                 console.error(err);
                 return;
             }
+            console.log("DATA1");
+            console.log(data);
             let locations = findBugLocationInCode(
                 data,
                 parent_class_name,
@@ -352,19 +354,21 @@ async function findBuggyFile(found_files, parent_class_name, parent_method_name,
     }
 }
 
-function findBugLocationInCode(code, fileName, parentFunction, bottleneckFunction, ignoreBottleneck = false) {
-  var parentFunctionSignature = "";
-  if (parentFunction !== "ctor") {
-    parentFunctionSignature = `${parentFunction}(`;
-  } else {
-    parentFunctionSignature = `${fileName}(`;
-  }
-  var bottleneckFunctionCall = `${bottleneckFunction}(`;
-  var possibleStarts = findAllOccurrences(code, parentFunctionSignature);
-  
-  console.log("POSSIBLE STARTS");
-  console.log(possibleStarts);
-  return [10, 14];
+function findBugLocationInCode(data, fileName, parentFunction, bottleneckFunction, ignoreBottleneck = false) {
+    console.log("DATA");
+    console.log(data);
+    var parentFunctionSignature = "";
+    if (parentFunction !== "ctor") {
+        parentFunctionSignature = `${parentFunction}(`;
+    } else {
+        parentFunctionSignature = `${fileName}(`;
+    }
+    var bottleneckFunctionCall = `${bottleneckFunction}(`;
+    var possibleStarts = findAllOccurrences(data, parentFunctionSignature);
+
+    console.log("POSSIBLE STARTS");
+    console.log(possibleStarts);
+    return [10, 14];
   for (let i = 0; i < possibleStarts.length; i++) {
     let start = possibleStarts[i];
     let end = getBalancedEndIndex(code.substring(start));
