@@ -55,6 +55,7 @@ jobs:
           issue-title: ${{ github.event.issue.title }}
           issue-body: ${{ github.event.issue.body }}
           issue-number: ${{ github.event.issue.number }}
+          issue-info: ${{ github.event.issue }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           pat-token: ${{ secrets.PAT_TOKEN }}
           body: |

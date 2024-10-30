@@ -22,6 +22,9 @@ async function run() {
         const issue_title = core.getInput('issue-title');
         const issue_body = core.getInput('issue-body');
         const issue_number = core.getInput('issue-number');
+        const issue_info = core.getInput('issue-info');
+        console.log("ISSUE INFO");
+        console.log(issue_info);
         console.log("ISSUE TITLE");
         console.log(issue_title);
         console.log("ISSUE BODY");
