@@ -35,8 +35,8 @@ async function run() {
             post_comment(repo_token, repo_url, pr_number, response);
         } else {
             console.log("---Issue info---");
-            const issue_title = core.getInput('issue-title');
             const issue_body = core.getInput('issue-body');
+            const issue_title = core.getInput('issue-title');
             const issue_number = core.getInput('issue-number');
 
             console.log("---Symbol info---");
@@ -52,16 +52,18 @@ async function run() {
             console.log(`Found files for ${path_ending}: ${found_files.join('\n')}`);
 
             console.log("---Localization---");
-            const localization = await findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name);
+            const localization = await getLocalizationValues(found_files, parent_class_name, parent_method_name, child_method_name);
             const buggy_file_path = localization[0];
-            const start_line_number = parseInt(localization[1][0]) - 1;
-            const end_line_number = parseInt(localization[1][1]) - 1;
-            const buggy_function_call = localization[2];
+            const buggy_method_name = localization[1];
+            const buggy_range = localization[2];
+            const buggy_file_data = localization[3];
             console.log(`Buggy file path: ${buggy_file_path}`);
-            console.log(`Start line number: ${start_line_number}`);
-            console.log(`End line number: ${end_line_number}`);
-            console.log(`Buggy method name: ${buggy_function_call}`);
+            console.log(`Buggy method name: ${buggy_method_name}`);
+            console.log(`Buggy range: ${buggy_range}`);
+            console.log(`Buggy file data:\n${buggy_file_data}`);
 
+            // const start_line_number = parseInt(localization[2][0]) - 1;
+            // const end_line_number = parseInt(localization[2][1]) - 1;
             // var fixed_file = await fix_bug(auth_token, session_id, file, start_line_number, buggy_function_call);
             // create_pr(repo_token, repo_url, buggy_file_path, issue_title, issue_number, file, fixed_file, session_id);
         }
@@ -274,94 +276,88 @@ async function create_pr(access_token, repo_url, buggy_file_path, issue_title, i
     });
 }
 
-async function findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name) {
+async function getLocalizationValues(found_files, parent_class_name, parent_method_name, child_method_name) {
     for (let i = 0; i < found_files.length; i++) {
-        let file = found_files[i];
-        const data = fs.readFileSync(file, 'utf8');
-        let locations = findBugLocationInCode(
-            data,
+        const file = found_files[i];
+        const file_data = fs.readFileSync(file, 'utf8');
+        const buggy_range = getBuggyRange(
+            file_data,
             parent_class_name,
             parent_method_name,
             child_method_name
         );
-        if (locations.length > 0) {
-            return [file.toString(), locations, child_method_name];
+        if (buggy_range.length > 0) {
+            return [file.toString(), child_method_name, buggy_range, file_data];
         }
     }
 
-    for (let i = 0; i < files.length; i++) {
-        let file = found_files[i];
-        let data = fs.readFileSync(file, 'utf8');
-        let locations = findBugLocationInCode(
-            data,
+    for (let i = 0; i < found_files.length; i++) {
+        const file = found_files[i];
+        const file_data = fs.readFileSync(file, 'utf8');
+        const buggy_range = getBuggyRange(
+            file_data,
             parent_class_name,
             parent_method_name,
             child_method_name,
             true
         );
-        if (locations.length > 0) {
-            return [file.toString(), locations, ""];
+        if (buggy_range.length > 0) {
+            return [file.toString(), "", buggy_range, file_data];
         }
     }
 
-    return ["", [], ""];
+    return ["", "", [], ""];
 }
 
-function findBugLocationInCode(data, fileName, parentFunction, bottleneckFunction, ignoreBottleneck = false) {
-  let parentFunctionSignature = "";
-  if (parentFunction !== "ctor") {
-    parentFunctionSignature = `${parentFunction}(`;
-  } else {
-    parentFunctionSignature = `${fileName}(`;
-  }
-  const bottleneckFunctionCall = `${bottleneckFunction}(`;
+function getBuggyRange(file_data, parent_class_name, parent_method_name, child_method_name, ignore_bottleneck = false) {
+    const parent_function_signature = parent_method_name !== "ctor" ? `${parent_method_name}(` : `${parent_class_name}(`;
+    const child_function_signature = `${child_method_name}(`;
+    
+    const possible_starts = findAllOccurrences(file_data, parent_function_signature);
+    for (let i = 0; i < possible_starts.length; i++) {
+        const start = possible_starts[i];
+        const end = getBalancedEndIndex(file_data.substring(start));
 
-  const possibleStarts = findAllOccurrences(data, parentFunctionSignature);
-  for (let i = 0; i < possibleStarts.length; i++) {
-    let start = possibleStarts[i];
-    let end = getBalancedEndIndex(data.substring(start));
-    let block = data.substring(start, start + end);
-    if (block.includes(bottleneckFunctionCall)) {
-      const bugStarts = findAllOccurrences(block, bottleneckFunctionCall);
-      if (bugStarts.length > 0) {
-        let blockStartLineNumber = data.substring(0, start).split("\n").length;
-        let blockEndLineNumber = data
-          .substring(0, start + end)
-          .split("\n").length;
-        return [blockStartLineNumber, blockEndLineNumber];
-      }
+        const file_data_block = file_data.substring(start, start + end);
+        if (file_data_block.includes(child_function_signature)) {
+            const bug_starts = findAllOccurrences(file_data_block, child_function_signature);
+            if (bug_starts.length > 0) {
+                const start_line_number = file_data.substring(0, start).split("\n").length;
+                const end_line_number = file_data.substring(0, start + end).split("\n").length;
+                return [start_line_number, end_line_number];
+            }
+        }
+
+        if (ignore_bottleneck) {
+            const start_line_number = file_data.substring(0, start).split("\n").length;
+            const end_line_number = file_data.substring(0, start + end).split("\n").length;
+            return [start_line_number, end_line_number];
+        }
     }
 
-    if (ignoreBottleneck) {
-      let blockStartLineNumber = data.substring(0, start).split("\n").length;
-      let blockEndLineNumber = data.substring(0, start + end).split("\n").length;
-      return [blockStartLineNumber, blockEndLineNumber];
-    }
-  }
-
-  return [];
+    return [];
 }
 
-function findAllOccurrences(str, substr) {
+function findAllOccurrences(data, function_signature) {
     let result = [];
-    let idx = str.indexOf(substr);
-    while (idx !== -1) {
-        result.push(idx);
-        idx = str.indexOf(substr, idx + 1);
+    let position = data.indexOf(function_signature);
+    while (position !== -1) {
+        result.push(position);
+        position = data.indexOf(function_signature, position + 1);
     }
     return result;
 }
 
 function getBalancedEndIndex(data) {
-  let openCount = 0;
+  let open_count = 0;
   let index = 0;
   while (index < data.length) {
     const ch = data[index];
     if (ch === "{") {
-      openCount += 1;
+      open_count += 1;
     } else if (ch === "}") {
-      openCount -= 1;
-      if (openCount === 0) {
+      open_count -= 1;
+      if (open_count === 0) {
         return index;
       }
     }
@@ -369,6 +365,5 @@ function getBalancedEndIndex(data) {
   }
   return 0;
 }
-
 
 run();
