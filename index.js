@@ -334,34 +334,25 @@ async function create_pr(access_token, repo_url, buggy_file_path, issue_title, i
 async function findBuggyFile(found_files, parent_class_name, parent_method_name, child_method_name) {
     for (let i = 0; i < found_files.length; i++) {
         let file = found_files[i];
-        console.log("FILE");
-        console.log(file);
-        let code = "";
         fs.readFile(file, 'utf8', (err, data) => {
             if (err) {
                 console.error(err);
                 return;
             }
-            code = data;
-            console.log("DATA");
-            console.log(data);
+            let locations = findBugLocationInCode(
+                data,
+                parent_class_name,
+                parent_method_name,
+                child_method_name
+            );
+            if (locations.length > 0) {
+                return [file.toString(), locations, child_method_name];
+            }
         });
-        console.log("CODE");
-        console.log(code);
-        let locations = findBugLocationInCode(
-            code,
-            parent_class_name,
-            parent_method_name,
-            child_method_name
-        );
-        if (locations.length > 0) {
-            return [file.toString(), locations, child_method_name];
-        }
     }
 }
 
 function findBugLocationInCode(code, fileName, parentFunction, bottleneckFunction, ignoreBottleneck = false) {
-    return [10, 14];
   var parentFunctionSignature = "";
   if (parentFunction !== "ctor") {
     parentFunctionSignature = `${parentFunction}(`;
@@ -370,6 +361,10 @@ function findBugLocationInCode(code, fileName, parentFunction, bottleneckFunctio
   }
   var bottleneckFunctionCall = `${bottleneckFunction}(`;
   var possibleStarts = findAllOccurrences(code, parentFunctionSignature);
+  
+  console.log("POSSIBLE STARTS");
+  console.log(possibleStarts);
+  return [10, 14];
   for (let i = 0; i < possibleStarts.length; i++) {
     let start = possibleStarts[i];
     let end = getBalancedEndIndex(code.substring(start));
