@@ -137,35 +137,7 @@ async function get_deepprompt_response(auth_token, session_id, buggy_file_data, 
     const intent = 'perf_fix';
     const prompt_strategy = 'instructive';
     const context = {
-        'source_code': `// ---------------------------------------------------------------------------
-// <copyright file="Scrubber.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-namespace Microsoft.ApplicationInsights.Kubernetes
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text.RegularExpressions;
-
-    public class Scrubber
-    {
-        public const string EmailRegExPattern = @"[a-zA-Z0-9!#$+\-^_~]+(?:\.[a-zA-Z0-9!#$+\-^_~]+)*@(?:[a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,6}";
-        public static string ScrubData(string data, char replacementChar)
-        {
-            Regex rx = new Regex(EmailRegExPattern);
-            foreach (Match match in rx.Matches(data))
-            {
-                string replacementString = new string(replacementChar, match.Value.Length);
-                data = data.Replace(match.Value, replacementString);
-            }
-
-            return data;
-        }
-    }
-}`,
+        'source_code': buggy_file_data,
         'buggy_function_call': buggy_method_name,
         'start_line_number': start_line_number.toString(),
         'prompt_strategy': prompt_strategy
