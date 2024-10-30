@@ -158,6 +158,8 @@ async function get_deepprompt_response(auth_token, session_id, buggy_file_data, 
             })
         });
         const response_json = await response.json();
+        console.log("RESPONSE");
+        console.log(response_json);
         return response_json["response_text"];
     } catch (error) {
         console.log("Error in obtaining a response from DeepPrompt");
