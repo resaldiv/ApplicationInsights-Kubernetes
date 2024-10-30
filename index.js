@@ -339,8 +339,6 @@ async function findBuggyFile(found_files, parent_class_name, parent_method_name,
                 console.error(err);
                 return;
             }
-            console.log("DATA1");
-            console.log(data);
             let locations = findBugLocationInCode(
                 data,
                 parent_class_name,
@@ -355,8 +353,6 @@ async function findBuggyFile(found_files, parent_class_name, parent_method_name,
 }
 
 function findBugLocationInCode(data, fileName, parentFunction, bottleneckFunction, ignoreBottleneck = false) {
-    console.log("DATA");
-    console.log(data);
     var parentFunctionSignature = "";
     if (parentFunction !== "ctor") {
         parentFunctionSignature = `${parentFunction}(`;
@@ -398,9 +394,11 @@ function findBugLocationInCode(data, fileName, parentFunction, bottleneckFunctio
 
 function findAllOccurrences(str, substr) {
   let result = [];
+  console.log("IDX", idx);
   let idx = str.indexOf(substr);
   while (idx !== -1) {
     result.push(idx);
+    console.log("str", str);
     idx = str.indexOf(substr, idx + 1);
   }
   return result;
