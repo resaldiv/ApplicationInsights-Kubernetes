@@ -281,7 +281,23 @@ async function create_pr(access_token, repo_url, buggy_file_path, issue_title, i
 function fix_file(buggy_file_data, start_line_number, end_line_number, clean_code_text){
     try {
         const lines = buggy_file_data.split('\n');
-        const fixed_lines = lines.slice(0, start_line_number - 1).concat(clean_code_text.split('\n')).concat(lines.slice(end_line_number));
+        const start_line = lines[start_line_number - 1];
+        const leading_whitespace = start_line.match(/^\s*/);
+        const count = leading_whitespace ? leading_whitespace[0].length : 0;
+        const clean_code_text_lines = clean_code_text.split('\n');
+
+        let indentation = "";
+        for (let index = 0; index < count; index++) {
+            indentation += " ";
+        }
+
+        for (let index = 0; index < clean_code_text_lines.length; index++) {
+            if (clean_code_text_lines[index] !== "") {
+                clean_code_text_lines[index] = indentation + clean_code_text_lines[index];
+            }
+        }
+        const formatted_clean_code_text = clean_code_text_lines.join("\n");
+        const fixed_lines = lines.slice(0, start_line_number - 1).concat(formatted_clean_code_text.split('\n')).concat(lines.slice(end_line_number));
         return fixed_lines.join('\n');
     } catch(error) {
         console.log(error);
