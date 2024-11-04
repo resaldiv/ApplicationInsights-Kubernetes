@@ -2,9 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const fetch = require('node-fetch');
 var base64 = require('js-base64').Base64;
-const { Octokit } = require('@octokit/core');
-const { createPullRequest } = require('octokit-plugin-create-pull-request');
-const MyOctokit = Octokit.plugin(createPullRequest);
+const Octokit = require('oktokit');
 const fs = require('fs');
 const path = require('path');
 
@@ -258,11 +256,7 @@ async function create_pr(repo_token, repo_url, buggy_file_path, issue_title, iss
     const fix_title = `PERF: Fix ${issue_title}`;
     const branch_name = 'test-branch-' + (new Date()).getTime();
 
-    const octokit = new MyOctokit({
-        auth: repo_token,
-    });
-
-    const octokitCore = new Octokit({ auth: repo_token });
+    const octokit = new Octokit({ auth: repo_token });
 
     try {
         const response = await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
@@ -278,27 +272,6 @@ async function create_pr(repo_token, repo_url, buggy_file_path, issue_title, iss
     } catch (error) {
         console.log(error);
     }
-
-    // octokit.rest.git.createRef({owner: user, repo: repo, ref: `refs/heads/${branch_name}`, sha: 'main'});
-
-    let change = {}
-    change[buggy_file_path] = fixed_file;
-    octokit.createPullRequest({
-        owner: user,
-        repo: repo,
-        title: fix_title,
-        body: `Auto-generated PR fixing issue #${issue_number}. Session ID: ${session_id}.`,
-        head: branch_name,
-        base: 'develop',
-        update: false,
-        forceFork: false,
-        changes: [
-            {
-                files: change,
-                commit: fix_title,
-            },
-        ],
-    });
 }
 
 function fix_file(buggy_file_data, start_line_number, end_line_number, clean_code_text){
