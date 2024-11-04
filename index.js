@@ -256,7 +256,7 @@ async function create_pr(repo_token, repo_url, buggy_file_path, issue_title, iss
     const repo = repo_url.split('/')[4];
     console.log("user:" + user);
     console.log("repo:" + repo);
-    
+
     const fix_title = `PERF: Fix ${issue_title}`;
     const branch_name = 'test-branch-' + (new Date()).getTime();
 
@@ -272,7 +272,7 @@ async function create_pr(repo_token, repo_url, buggy_file_path, issue_title, iss
         title: fix_title,
         body: `Auto-generated PR fixing issue #${issue_number}. Session ID: ${session_id}.`,
         head: branch_name,
-        base: 'main',
+        base: 'develop',
         update: false,
         forceFork: false,
         changes: [
