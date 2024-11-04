@@ -19,6 +19,8 @@ async function run() {
         const session_id = auth['session_id'];
 
         const repo_token = core.getInput('repo-token');
+        const repo = core.getInput('repo');
+        const repo_url = `https://github.com/${repo}`;
         const comment = core.getInput('comment', { required: false });
         
         if (comment) {
@@ -26,8 +28,6 @@ async function run() {
             const comment_id = core.getInput('comment-id');
             console.log(comment_id);
             const pr_number = core.getInput('pr-number');
-            const repo = core.getInput('repo');
-            const repo_url = `https://github.com/${repo}`;
             const session_id = pr_body.split('Session ID: ')[1].split('.')[0];
 
             const query = comment.split('/devbot ')[1];
@@ -76,6 +76,9 @@ async function run() {
             console.log("---Fixed file---");
             const fixed_file = fix_file(buggy_file_data, start_line_number, end_line_number, clean_code_text)
             console.log(fixed_file);
+
+            console.log("---Create PR---");
+            await create_pr(repo_token, repo_url, buggy_file_path, issue_title, issue_number, fixed_file, session_id);
         }
     } catch (error) {
         core.setFailed(error.message);
@@ -248,17 +251,17 @@ function find_end_of_function(data, start_line_number) {
     return i;
 }
 
-async function create_pr(access_token, repo_url, buggy_file_path, issue_title, issue_number, file, fixed_file, session_id) {
+async function create_pr(repo_token, repo_url, buggy_file_path, issue_title, issue_number, fixed_file, session_id) {
     const user = repo_url.split('/')[3];
     const repo = repo_url.split('/')[4];
     const fix_title = `PERF: Fix ${issue_title}`;
     const branch_name = 'test-branch-' + (new Date()).getTime();
 
     const octokit = new MyOctokit({
-        auth: access_token,
+        auth: repo_token,
     });
 
-    var change = {}
+    let change = {}
     change[buggy_file_path] = fixed_file;
     octokit.createPullRequest({
         owner: user,
