@@ -73,8 +73,9 @@ async function run() {
 
             // Create branch
             const octokit = new Octokit({ auth: repo_token });
-            const branch = await create_branch(octokit, repo_url);
-            console.log(branch);
+            const branch_name = 'test-branch-' + (new Date()).getTime();
+            const branch = await create_branch(octokit, repo_url, branch_name);
+            await update_branch(octokit, buggy_file_path, buggy_file_data, branch.object.sha, branch_name);
         }
     } catch (error) {
         core.setFailed(error.message);
@@ -249,10 +250,9 @@ function find_end_of_function(code, start_line_number) {
     return i;
 }
 
-async function create_branch(octokit, repo_url) {
+async function create_branch(octokit, repo_url, branch_name) {
     const user = repo_url.split('/')[3];
     const repo = repo_url.split('/')[4];
-    const branch_name = 'test-branch-' + (new Date()).getTime();
 
     let develop_sha;
     try {
@@ -282,6 +282,59 @@ async function create_branch(octokit, repo_url) {
         return response.data;
     } catch (error) {
         core.setFailed(`An error occurred while trying to create a new branch: ${error.message}`);
+    }
+}
+
+async function update_branch(octokit, buggy_file_path, buggy_file_data, commit_sha, branch_name) {
+    const user = repo_url.split('/')[3];
+    const repo = repo_url.split('/')[4];
+
+    try {
+        const { data: commit_data } = await octokit.git.getCommit({
+            owner: user,
+            repo: repo,
+            commit_sha: commit_sha
+        });
+
+        const tree_sha = commit_data.tree.sha;
+
+        const { data: blob_data } = await octokit.git.createBlob({
+            owner: user,
+            repo: repo,
+            content: Buffer.from(buggy_file_data).toString("base64"),
+            encoding: "base64"
+        });
+
+        const { data: tree_data } = await octokit.git.createTree({
+            owner: user,
+            repo: repo,
+            base_tree: tree_sha,
+            tree: [
+                {
+                    path: buggy_file_path,
+                    mode: "100644", // file (blob) mode
+                    type: "blob",
+                    sha: blob_data.sha
+                }
+            ]
+        });
+
+        const { data: new_commit_data } = await octokit.git.createCommit({
+            owner: user,
+            repo: repo,
+            message: "Test",
+            tree: tree_data.sha,
+            parents: [commit_sha]
+        });
+
+        await octokit.git.updateRef({
+            owner: user,
+            repo: repo,
+            ref: `heads/${branch_name}`,
+            sha: new_commit_data.sha
+        });
+    } catch (error) {
+        core.setFailed(`An error occurred while trying to update the branch: ${error.message}`);
     }
 }
 
