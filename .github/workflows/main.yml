@@ -52,6 +52,7 @@ jobs:
         uses: ./ # Uses an action in the root directory
         id: fix
         with:
+          repo: ${{ github.event.repository.full_name }}
           issue-title: ${{ github.event.issue.title }}
           issue-body: ${{ github.event.issue.body }}
           issue-number: ${{ github.event.issue.number }}
