@@ -211,8 +211,6 @@ async function get_deepprompt_auth(pat_token) {
 async function get_file(access_token, repo_url, buggy_file_path) {
     const user = repo_url.split('/')[3];
     const repo = repo_url.split('/')[4];
-    console.log("user:" + user);
-    console.log("repo:" + repo);
     try {
         url = `https://api.github.com/repos/${user}/${repo}/contents/${buggy_file_path}`
         let response = await fetch(url, {
@@ -256,6 +254,9 @@ function find_end_of_function(data, start_line_number) {
 async function create_pr(repo_token, repo_url, buggy_file_path, issue_title, issue_number, fixed_file, session_id) {
     const user = repo_url.split('/')[3];
     const repo = repo_url.split('/')[4];
+    console.log("user:" + user);
+    console.log("repo:" + repo);
+    
     const fix_title = `PERF: Fix ${issue_title}`;
     const branch_name = 'test-branch-' + (new Date()).getTime();
 
