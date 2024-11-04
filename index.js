@@ -262,15 +262,21 @@ async function create_pr(repo_token, repo_url, buggy_file_path, issue_title, iss
         auth: repo_token,
     });
 
-    const response = await octokit.request('POST /repos/{owner}/{repo}/git/refs',
-        {
-            owner: user,
-            repo: repo,
-            ref: `refs/heads/${branch_name}`,
-            sha: 'main'
-        }
-    );
-    console.log(response);
+    const octokitCore = new Octokit({ auth: repo_token });
+
+    try {
+        const response = await octokitCore.request('POST /repos/{owner}/{repo}/git/refs',
+            {
+                owner: user,
+                repo: repo,
+                ref: `refs/heads/${branch_name}`,
+                sha: 'main'
+            }
+        );
+        console.log(response);
+    } catch (error) {
+        console.log(error);
+    }
 
     // octokit.rest.git.createRef({owner: user, repo: repo, ref: `refs/heads/${branch_name}`, sha: 'main'});
 
