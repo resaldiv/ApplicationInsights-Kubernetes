@@ -262,7 +262,15 @@ async function create_pr(repo_token, repo_url, buggy_file_path, issue_title, iss
         auth: repo_token,
     });
 
-    octokit.rest.git.createRef({owner: user, repo: repo, ref: `refs/heads/${branch_name}`, sha: 'main'});
+    await octokit.request('POST /repos/{owner}/{repo}/git/refs',
+    {
+        owner: user,
+        repo: repo,
+        ref: `refs/heads/${branch_name}`,
+        sha: 'main'
+    })
+
+    // octokit.rest.git.createRef({owner: user, repo: repo, ref: `refs/heads/${branch_name}`, sha: 'main'});
 
     let change = {}
     change[buggy_file_path] = fixed_file;
