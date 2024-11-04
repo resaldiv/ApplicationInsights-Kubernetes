@@ -275,7 +275,7 @@ async function create_pr(repo_token, repo_url, buggy_file_path, issue_title, iss
         const response = octokit.rest.git.createRef({
             owner: user,
             repo: repo,
-            ref: branch_name,
+            ref: `refs/heads/${branch_name}`,
             sha: develop_sha
         });
         console.log(response);
