@@ -252,6 +252,7 @@ function find_end_of_function(code, start_line_number) {
 async function create_branch(octokit, repo_url) {
     const user = repo_url.split('/')[3];
     const repo = repo_url.split('/')[4];
+    const branch_name = 'test-branch-' + (new Date()).getTime();
 
     let develop_sha;
     try {
