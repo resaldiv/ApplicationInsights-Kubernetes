@@ -75,7 +75,7 @@ async function run() {
             const octokit = new Octokit({ auth: repo_token });
             const branch_name = 'test-branch-' + (new Date()).getTime();
             const branch = await create_branch(octokit, repo_url, branch_name);
-            await update_branch(octokit, buggy_file_path, buggy_file_data, branch.object.sha, branch_name);
+            await update_branch(octokit, repo_url, buggy_file_path, buggy_file_data, branch.object.sha, branch_name);
         }
     } catch (error) {
         core.setFailed(error.message);
@@ -285,7 +285,7 @@ async function create_branch(octokit, repo_url, branch_name) {
     }
 }
 
-async function update_branch(octokit, buggy_file_path, buggy_file_data, commit_sha, branch_name) {
+async function update_branch(octokit, repo_url, buggy_file_path, buggy_file_data, commit_sha, branch_name) {
     const user = repo_url.split('/')[3];
     const repo = repo_url.split('/')[4];
 
