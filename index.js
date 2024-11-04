@@ -211,6 +211,8 @@ async function get_deepprompt_auth(pat_token) {
 async function get_file(access_token, repo_url, buggy_file_path) {
     const user = repo_url.split('/')[3];
     const repo = repo_url.split('/')[4];
+    console.log("user:" + user);
+    console.log("repo:" + repo);
     try {
         url = `https://api.github.com/repos/${user}/${repo}/contents/${buggy_file_path}`
         let response = await fetch(url, {
