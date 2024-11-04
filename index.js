@@ -16,7 +16,7 @@ async function run() {
         const repo_url = `https://github.com/${repo}`;
 
         // DeepPrompt Auth
-        const pat_token = core.getInput('token');
+        const pat_token = core.getInput('pat-token');
         const auth = await get_deepprompt_auth(pat_token);
         const auth_token = auth['access_token'];
         const session_id = auth['session_id'];
