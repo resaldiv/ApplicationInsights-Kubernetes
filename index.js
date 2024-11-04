@@ -76,6 +76,7 @@ async function run() {
             const branch_name = 'test-branch-' + (new Date()).getTime();
             const branch = await create_branch(octokit, repo_url, branch_name);
             await update_branch(octokit, repo_url, buggy_file_path, buggy_file_data, branch.object.sha, branch_name);
+            await create_pr(octokit, repo_url, buggy_file_path, issue_title, issue_number, fixed_file, session_id, branch_name);
         }
     } catch (error) {
         core.setFailed(error.message);
@@ -338,17 +339,12 @@ async function update_branch(octokit, repo_url, buggy_file_path, buggy_file_data
     }
 }
 
-async function create_pr(access_token, repo_url, buggy_file_path, issue_title, issue_number, file, fixed_file, session_id) {
+async function create_pr(octokit, repo_url, buggy_file_path, issue_title, issue_number, fixed_file, session_id, branch_name) {
     const user = repo_url.split('/')[3];
     const repo = repo_url.split('/')[4];
     const fix_title = `PERF: Fix ${issue_title}`;
-    const branch_name = 'test-branch-' + (new Date()).getTime();
 
-    const octokit = new MyOctokit({
-        auth: access_token,
-    });
-
-    var change = {}
+    let change = {}
     change[buggy_file_path] = fixed_file;
     octokit.createPullRequest({
         owner: user,
@@ -356,7 +352,7 @@ async function create_pr(access_token, repo_url, buggy_file_path, issue_title, i
         title: fix_title,
         body: `Auto-generated PR fixing issue #${issue_number}. Session ID: ${session_id}.`,
         head: branch_name,
-        base: 'main',
+        base: 'develop',
         update: false,
         forceFork: false,
         changes: [
