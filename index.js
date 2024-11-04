@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 var base64 = require('js-base64').Base64;
 const fs = require('fs');
 const path = require('path');
-const {Octokit} = require("octokit");
+const {Octokit} = require("@octokit/rest");
 
 DEEPPROMPT_ENDPOINT = "https://data-ai.microsoft.com/deepprompt/api/v1"
 
