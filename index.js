@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const fetch = require('node-fetch');
 var base64 = require('js-base64').Base64;
-const Octokit = require('oktokit');
+const { Octokit, App } = require("octokit");
 const fs = require('fs');
 const path = require('path');
 
