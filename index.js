@@ -259,25 +259,37 @@ async function create_pr(repo_token, repo_url, buggy_file_path, issue_title, iss
     const octokit = new Octokit({ auth: repo_token });
 
     try {
-        octokit.rest.git.createRef({
+        const response = await octokit.git.getRef({
             owner: user,
             repo: repo,
-            ref: branch_name,
-            sha: 'main'
+            ref: 'heads/develop'
         });
-        // const response = await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
-        //     owner: user,
-        //     repo: repo,
-        //     ref: 'refs/heads/featureA',
-        //     sha: 'main',
-        //     headers: {
-        //         'X-GitHub-Api-Version': '2022-11-28'
-        //     }
-        // });
-        console.log(response);
+        const develop_sha = response.data.object.sha;
+        console.log(`The develop SHA is: ${develop_sha}`);
     } catch (error) {
         console.log(error);
     }
+
+    // try {
+    //     octokit.rest.git.createRef({
+    //         owner: user,
+    //         repo: repo,
+    //         ref: branch_name,
+    //         sha: 'main'
+    //     });
+    //     // const response = await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
+    //     //     owner: user,
+    //     //     repo: repo,
+    //     //     ref: 'refs/heads/featureA',
+    //     //     sha: 'main',
+    //     //     headers: {
+    //     //         'X-GitHub-Api-Version': '2022-11-28'
+    //     //     }
+    //     // });
+    //     console.log(response);
+    // } catch (error) {
+    //     console.log(error);
+    // }
 }
 
 function fix_file(buggy_file_data, start_line_number, end_line_number, clean_code_text){
