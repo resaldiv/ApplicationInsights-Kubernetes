@@ -265,14 +265,15 @@ async function create_pr(repo_token, repo_url, buggy_file_path, issue_title, iss
     const octokitCore = new Octokit({ auth: repo_token });
 
     try {
-        const response = await octokitCore.request('POST /repos/{owner}/{repo}/git/refs',
-            {
-                owner: user,
-                repo: repo,
-                ref: `refs/heads/${branch_name}`,
-                sha: 'main'
+        const response = await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
+            owner: user,
+            repo: repo,
+            ref: 'refs/heads/featureA',
+            sha: 'main',
+            headers: {
+                'X-GitHub-Api-Version': '2022-11-28'
             }
-        );
+        });
         console.log(response);
     } catch (error) {
         console.log(error);
