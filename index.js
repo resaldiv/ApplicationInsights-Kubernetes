@@ -80,8 +80,8 @@ async function run() {
             await update_branch(octokit, repo_url, buggy_file_path, fixed_file, branch.object.sha, branch_name, issue_title);
 
             // Create PR
-            // const octokitPR = new OctokitPR({auth: repo_token});
-            // await create_pr(octokitPR, repo_url, buggy_file_path, issue_title, issue_number, fixed_file, session_id, branch_name);
+            const octokitPR = new OctokitPR({auth: repo_token});
+            await create_pr(octokitPR, repo_url, buggy_file_path, issue_title, issue_number, fixed_file, session_id, branch_name);
         }
     } catch (error) {
         core.setFailed(error.message);
@@ -359,13 +359,7 @@ async function create_pr(octokit, repo_url, buggy_file_path, issue_title, issue_
         head: branch_name,
         base: 'develop',
         update: false,
-        forceFork: false,
-        changes: [
-            {
-                files: change,
-                commit: fix_title,
-            },
-        ],
+        forceFork: false
     });
 }
 
