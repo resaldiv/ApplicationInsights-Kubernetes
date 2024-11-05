@@ -3,6 +3,8 @@ const github = require('@actions/github');
 const fetch = require('node-fetch');
 var base64 = require('js-base64').Base64;
 const {Octokit} = require("@octokit/rest");
+const { createPullRequest } = require('octokit-plugin-create-pull-request');
+const OctokitPR = Octokit.plugin(createPullRequest);
 const fs = require('fs');
 const path = require('path');
 
@@ -76,7 +78,10 @@ async function run() {
             const branch_name = 'test-branch-' + (new Date()).getTime();
             const branch = await create_branch(octokit, repo_url, branch_name);
             await update_branch(octokit, repo_url, buggy_file_path, buggy_file_data, branch.object.sha, branch_name);
-            await create_pr(octokit, repo_url, buggy_file_path, issue_title, issue_number, fixed_file, session_id, branch_name);
+
+            // Create PR
+            const octokitPR = new OctokitPR({auth: repo_token});
+            await create_pr(octokitPR, repo_url, buggy_file_path, issue_title, issue_number, fixed_file, session_id, branch_name);
         }
     } catch (error) {
         core.setFailed(error.message);
