@@ -77,7 +77,7 @@ async function run() {
             const octokit = new Octokit({ auth: repo_token });
             const branch_name = 'test-branch-' + (new Date()).getTime();
             const branch = await create_branch(octokit, repo_url, branch_name);
-            await update_branch(octokit, repo_url, buggy_file_path, fixed_file, branch.object.sha, branch_name);
+            await update_branch(octokit, repo_url, buggy_file_path, fixed_file, branch.object.sha, branch_name, issue_title);
 
             // Create PR
             // const octokitPR = new OctokitPR({auth: repo_token});
@@ -291,7 +291,7 @@ async function create_branch(octokit, repo_url, branch_name) {
     }
 }
 
-async function update_branch(octokit, repo_url, buggy_file_path, fixed_file, commit_sha, branch_name) {
+async function update_branch(octokit, repo_url, buggy_file_path, fixed_file, commit_sha, branch_name, issue_title) {
     const user = repo_url.split('/')[3];
     const repo = repo_url.split('/')[4];
 
@@ -328,7 +328,7 @@ async function update_branch(octokit, repo_url, buggy_file_path, fixed_file, com
         const { data: new_commit_data } = await octokit.git.createCommit({
             owner: user,
             repo: repo,
-            message: "Test",
+            message: issue_title,
             tree: tree_data.sha,
             parents: [commit_sha]
         });
