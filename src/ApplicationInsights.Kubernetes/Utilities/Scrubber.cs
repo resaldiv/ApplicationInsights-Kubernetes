@@ -16,14 +16,16 @@ namespace Microsoft.ApplicationInsights.Kubernetes
         public const string EmailRegExPattern = @"[a-zA-Z0-9!#$+\-^_~]+(?:\.[a-zA-Z0-9!#$+\-^_~]+)*@(?:[a-zA-Z0-9\-]+\.)+[a-zA-Z]{2,6}";
         public static string ScrubData(string data, char replacementChar)
         {
+            StringBuilder sb = new StringBuilder(data);
             Regex rx = new Regex(EmailRegExPattern);
             foreach (Match match in rx.Matches(data))
             {
                 string replacementString = new string(replacementChar, match.Value.Length);
-                data = data.Replace(match.Value, replacementString);
+                sb.Remove(match.Index, match.Length);
+                sb.Insert(match.Index, replacementString);
             }
 
-            return data;
+            return sb.ToString();
         }
     }
 }
