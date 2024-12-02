@@ -17,13 +17,7 @@ namespace Microsoft.ApplicationInsights.Kubernetes
         public static string ScrubData(string data, char replacementChar)
         {
             Regex rx = new Regex(EmailRegExPattern);
-            foreach (Match match in rx.Matches(data))
-            {
-                string replacementString = new string(replacementChar, match.Value.Length);
-                data = data.Replace(match.Value, replacementString);
-            }
-
-            return data;
+            return rx.Replace(data, new MatchEvaluator(m => new string(replacementChar, m.Length)));
         }
     }
 }
